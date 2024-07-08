@@ -1,0 +1,16 @@
+{
+  // Theme settings
+  "workbench.preferredDarkColorTheme": "Dark Powershell Theme",
+  "workbench.preferredLightColorTheme": "PowerShell ISE",
+
+  // PowerShell settings
+  "powershell.scriptAnalysis.settingsPath": ".github/linters/.powershell-psscriptanalyzer.psd1",
+  "powershell.cwd": "Runbooks",
+  "powershell.integratedConsole.showOnStartup": true,
+  "powershell.pester.codeLens": false,
+
+  // Terminal settings
+  "terminal.integrated.defaultProfile.linux": "pwsh",
+  "terminal.integrated.defaultProfile.osx": "pwsh",
+  "terminal.integrated.defaultProfile.windows": "PowerShell"
+}

@@ -1,0 +1,60 @@
+name: Publish PowerShell Module
+
+on:
+  push:
+    tags:
+      - "v*" # Triggers the workflow on version tags
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        shell: pwsh
+        run: |
+          Install-PSResource -Name PowerShellGet -Scope CurrentUser
+          Install-PSResource -Name Pester -Scope CurrentUser
+
+      # - name: Test Module
+      #   shell: pwsh
+      #   run: |
+      #     Invoke-Pester
+
+      - name: Publish to PowerShell Gallery
+        shell: pwsh
+        env:
+          PSGalleryApiKey: ${{ secrets.PSGalleryApiKey }}
+        run: |
+          Publish-PSResource -Path ./Modules/Workoho.Az.Automation -Repository PSGallery -ApiKey $env:PSGalleryApiKey
+
+      # - name: Create ZIP File
+      #   shell: pwsh
+      #   run: |
+      #     $modulePath = "$(pwd)"
+      #     $zipPath = "$modulePath/$GITHUB_REPOSITORY-$GITHUB_REF_NAME.zip"
+      #     Compress-Archive -Path "$modulePath/*.psd1", "$modulePath/*.psm1" -DestinationPath $zipPath
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+      # - name: Upload PowerShell Module to Release
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./$GITHUB_REPOSITORY-$GITHUB_REF_NAME.zip
+      #     asset_name: $GITHUB_REPOSITORY-$GITHUB_REF_NAME.zip
+      #     asset_content_type: application/zip
