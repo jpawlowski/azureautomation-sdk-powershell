@@ -5,8 +5,8 @@
 .COMPANYNAME Workoho GmbH
 .COPYRIGHT © 2024 Workoho GmbH
 .TAGS
-.LICENSEURI https://github.com/workoho/azureautomation-sdk-powershell/blob/main/LICENSE.txt
-.PROJECTURI https://github.com/workoho/azureautomation-sdk-powershell
+.LICENSEURI https://github.com/workoho/automation-sdk-powershell/blob/main/LICENSE.txt
+.PROJECTURI https://github.com/workoho/automation-sdk-powershell
 .ICONURI
 .EXTERNALMODULEDEPENDENCIES
 .REQUIREDSCRIPTS

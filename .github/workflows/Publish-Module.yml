@@ -13,30 +13,71 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Determine tags for comparison
+        id: compare_tags
+        run: |
+          # Get all tags, then sort them by version
+          git tag | sort -V > sorted_tags.txt
+
+          # Initialize variables
+          LATEST_RELEASE_TAG=""
+          LATEST_PRERELEASE_TAG=""
+          PREVIOUS_TAG=""
+
+          # Iterate through sorted tags to find the latest release and prerelease tags
+          while read -r tag; do
+            if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then # Adjust regex as needed for your versioning scheme
+              LATEST_RELEASE_TAG="$tag"
+              if [[ "$PREVIOUS_TAG" != "" && "$PREVIOUS_TAG" != "$LATEST_RELEASE_TAG" ]]; then
+                LATEST_PRERELEASE_TAG="$PREVIOUS_TAG"
+              fi
+            fi
+            PREVIOUS_TAG="$tag"
+          done < sorted_tags.txt
+
+          # Determine if the latest prerelease tag is after the latest release tag
+          LATEST_PRERELEASE_AFTER_RELEASE="false"
+          if [[ "$LATEST_PRERELEASE_TAG" != "" && "$LATEST_PRERELEASE_TAG" != "$LATEST_RELEASE_TAG" ]]; then
+            LATEST_PRERELEASE_AFTER_RELEASE="true"
+          fi
+
+          # Output the findings
+          echo "::set-output name=latest_release_tag::$LATEST_RELEASE_TAG"
+          echo "::set-output name=latest_prerelease_tag::$LATEST_PRERELEASE_TAG"
+          echo "::set-output name=latest_prerelease_after_release::$LATEST_PRERELEASE_AFTER_RELEASE"
+        shell: bash
+
       - name: Install Dependencies
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
+          Install-PSResource -Name PackageManagement -Scope CurrentUser
           Install-PSResource -Name PowerShellGet -Scope CurrentUser
+          Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -Scope CurrentUser
           Install-PSResource -Name Pester -Scope CurrentUser
-
-      # - name: Test Module
-      #   shell: pwsh
-      #   run: |
-      #     Invoke-Pester
 
       - name: Publish to PowerShell Gallery
         shell: pwsh
         env:
-          PSGalleryApiKey: ${{ secrets.PSGalleryApiKey }}
+          PSResourceRepositoryApiKey: ${{ secrets.PSGalleryApiKey }}
         run: |
-          Publish-PSResource -Path ./Modules/Workoho.Automation -Repository PSGallery -ApiKey $env:PSGalleryApiKey
+          $ErrorActionPreference = 'Stop'
+          $Modules = @(./Scripts/Publish-PSModuleToRepository.ps1) - join ','
+          echo "published_modules=$Modules" >> $env:GITHUB_ENV
 
-      # - name: Create ZIP File
-      #   shell: pwsh
-      #   run: |
-      #     $modulePath = "$(pwd)"
-      #     $zipPath = "$modulePath/$GITHUB_REPOSITORY-$GITHUB_REF_NAME.zip"
-      #     Compress-Archive -Path "$modulePath/*.psd1", "$modulePath/*.psm1" -DestinationPath $zipPath
+      - name: Download nupkg from Repository
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $Modules = @(./Scripts/Receive-PSModuleFromRepository.ps1 -Modules $env:published_modules ) -join ','
+          echo "downloaded_modules=$Modules" >> $env:GITHUB_ENV
+
+      - name: Create ZIP archives
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $Modules = @(./Scripts/Compress-PSModule.ps1 -Modules $env:published_modules ) -join ','
+          echo "compressed_modules=$Modules" >> $env:GITHUB_ENV
 
       - name: Create GitHub Release
         id: create_release
@@ -45,9 +86,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
+          release_name: ${{ contains(github.ref_name, '-') && 'Prerelease ' || 'Release ' }}${{ github.ref_name }}
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          body: |
+            This release is automatically generated.
+
+            Changes: [${{ github.ref_name }}...${{ steps.latest_release.outputs.tag }}](https://github.com/${{ github.repository }}/compare/${{ steps.latest_release.outputs.tag }}...${{ github.ref_name }})
 
       # - name: Upload PowerShell Module to Release
       #   uses: actions/upload-release-asset@v1

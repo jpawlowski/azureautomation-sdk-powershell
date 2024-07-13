@@ -1,5 +1,5 @@
 # distribution artifacts
-dist/
+build_artifacts/
 
 # Created by https://www.toptal.com/developers/gitignore/api/git,linux,macos,dotenv,windows,powershell,visualstudiocode,compressedarchive
 # Edit at https://www.toptal.com/developers/gitignore?templates=git,linux,macos,dotenv,windows,powershell,visualstudiocode,compressedarchive

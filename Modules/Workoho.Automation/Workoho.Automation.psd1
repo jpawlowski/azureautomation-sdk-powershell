@@ -138,25 +138,23 @@
                 'Azure',
                 'Automation',
                 'AzAutomation'
+                'PowerShell'
             )
 
             # A URL to the license for this module.
-            LicenseUri   = 'https://github.com/workoho/azureautomation-sdk-powershell/LICENSE.txt'
+            LicenseUri   = 'https://github.com/workoho/automation-sdk-powershell/LICENSE.txt'
 
             # A URL to the main website for this project.
-            ProjectUri   = 'https://github.com/workoho/azureautomation-sdk-powershell'
+            ProjectUri   = 'https://github.com/workoho/automation-sdk-powershell'
 
             # A URL to an icon representing this module.
-            IconUri      = 'https://github.com/workoho/azureautomation-sdk-powershell/images/icon.png'
+            IconUri      = 'https://github.com/workoho/automation-sdk-powershell/images/icon.png'
 
             # ReleaseNotes of this module
-            ReleaseNotes = @'
-            ## 2.0.0
-            - Initial release of the Workoho.Automation module.
-'@
+            ReleaseNotes = 'For detailed release notes, please visit https://github.com/workoho/automation-sdk-powershell/releases'
 
             # Prerelease string of this module
-            Prerelease   = 'preview1'
+            Prerelease   = 'alpha1'
 
             # Flag to indicate whether the module requires explicit user acceptance for install/update/save
             # RequireLicenseAcceptance = $false

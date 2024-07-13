@@ -30,7 +30,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/workoho/azureautomation-sdk-powershell">
+  <a href="https://github.com/workoho/automation-sdk-powershell">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
@@ -39,14 +39,14 @@
   <p align="center">
     project_description
     <br />
-    <a href="https://github.com/workoho/azureautomation-sdk-powershell"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/workoho/automation-sdk-powershell"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/workoho/azureautomation-sdk-powershell">View Demo</a>
+    <a href="https://github.com/workoho/automation-sdk-powershell">View Demo</a>
     ·
-    <a href="https://github.com/workoho/azureautomation-sdk-powershell/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/workoho/automation-sdk-powershell/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
-    <a href="https://github.com/workoho/azureautomation-sdk-powershell/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/workoho/automation-sdk-powershell/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
@@ -85,7 +85,7 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `workoho`, `azureautomation-sdk-powershell`, `email_client`, `email`, `project_title`, `project_description`
+Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `workoho`, `automation-sdk-powershell`, `email_client`, `email`, `project_title`, `project_description`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -125,7 +125,7 @@ This is an example of how to list things you need to use the software and how to
 1. Get a free API Key at [https://example.com](https://example.com)
 2. Clone the repo
    ```sh
-   git clone https://github.com/workoho/azureautomation-sdk-powershell.git
+   git clone https://github.com/workoho/automation-sdk-powershell.git
    ```
 3. Install NPM packages
    ```sh
@@ -159,7 +159,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [ ] Feature 3
     - [ ] Nested Feature
 
-See the [open issues](https://github.com/workoho/azureautomation-sdk-powershell/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/workoho/automation-sdk-powershell/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -197,7 +197,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Your Name - email@email_client.com
 
-Project Link: [https://github.com/workoho/azureautomation-sdk-powershell](https://github.com/workoho/azureautomation-sdk-powershell)
+Project Link: [https://github.com/workoho/automation-sdk-powershell](https://github.com/workoho/automation-sdk-powershell)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -216,16 +216,16 @@ Project Link: [https://github.com/workoho/azureautomation-sdk-powershell](https:
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/workoho/azureautomation-sdk-powershell.svg?style=for-the-badge
-[contributors-url]: https://github.com/workoho/azureautomation-sdk-powershell/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/workoho/azureautomation-sdk-powershell.svg?style=for-the-badge
-[forks-url]: https://github.com/workoho/azureautomation-sdk-powershell/network/members
-[stars-shield]: https://img.shields.io/github/stars/workoho/azureautomation-sdk-powershell.svg?style=for-the-badge
-[stars-url]: https://github.com/workoho/azureautomation-sdk-powershell/stargazers
-[issues-shield]: https://img.shields.io/github/issues/workoho/azureautomation-sdk-powershell.svg?style=for-the-badge
-[issues-url]: https://github.com/workoho/azureautomation-sdk-powershell/issues
-[license-shield]: https://img.shields.io/github/license/workoho/azureautomation-sdk-powershell.svg?style=for-the-badge
-[license-url]: https://github.com/workoho/azureautomation-sdk-powershell/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/workoho/automation-sdk-powershell.svg?style=for-the-badge
+[contributors-url]: https://github.com/workoho/automation-sdk-powershell/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/workoho/automation-sdk-powershell.svg?style=for-the-badge
+[forks-url]: https://github.com/workoho/automation-sdk-powershell/network/members
+[stars-shield]: https://img.shields.io/github/stars/workoho/automation-sdk-powershell.svg?style=for-the-badge
+[stars-url]: https://github.com/workoho/automation-sdk-powershell/stargazers
+[issues-shield]: https://img.shields.io/github/issues/workoho/automation-sdk-powershell.svg?style=for-the-badge
+[issues-url]: https://github.com/workoho/automation-sdk-powershell/issues
+[license-shield]: https://img.shields.io/github/license/workoho/automation-sdk-powershell.svg?style=for-the-badge
+[license-url]: https://github.com/workoho/automation-sdk-powershell/blob/master/LICENSE.txt
 [product-screenshot]: images/screenshot.png
 [AzAutoFW]: https://img.shields.io/badge/Azure_Automation_Framework-1F4386?style=for-the-badge&logo=microsoftazure&logoColor=white
 [AzAutoFW-url]: https://github.com/workoho/AzAuto-Common-Runbook-FW
