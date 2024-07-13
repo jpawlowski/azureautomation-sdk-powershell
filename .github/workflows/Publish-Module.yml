@@ -29,7 +29,7 @@ jobs:
         env:
           PSGalleryApiKey: ${{ secrets.PSGalleryApiKey }}
         run: |
-          Publish-PSResource -Path ./Modules/Workoho.Az.Automation -Repository PSGallery -ApiKey $env:PSGalleryApiKey
+          Publish-PSResource -Path ./Modules/Workoho.Automation -Repository PSGallery -ApiKey $env:PSGalleryApiKey
 
       # - name: Create ZIP File
       #   shell: pwsh
