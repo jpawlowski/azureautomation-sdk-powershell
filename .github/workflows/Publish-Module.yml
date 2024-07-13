@@ -13,40 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Determine tags for comparison
-        id: compare_tags
-        run: |
-          # Get all tags, then sort them by version
-          git tag | sort -V > sorted_tags.txt
-
-          # Initialize variables
-          LATEST_RELEASE_TAG=""
-          LATEST_PRERELEASE_TAG=""
-          PREVIOUS_TAG=""
-
-          # Iterate through sorted tags to find the latest release and prerelease tags
-          while read -r tag; do
-            if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then # Adjust regex as needed for your versioning scheme
-              LATEST_RELEASE_TAG="$tag"
-              if [[ "$PREVIOUS_TAG" != "" && "$PREVIOUS_TAG" != "$LATEST_RELEASE_TAG" ]]; then
-                LATEST_PRERELEASE_TAG="$PREVIOUS_TAG"
-              fi
-            fi
-            PREVIOUS_TAG="$tag"
-          done < sorted_tags.txt
-
-          # Determine if the latest prerelease tag is after the latest release tag
-          LATEST_PRERELEASE_AFTER_RELEASE="false"
-          if [[ "$LATEST_PRERELEASE_TAG" != "" && "$LATEST_PRERELEASE_TAG" != "$LATEST_RELEASE_TAG" ]]; then
-            LATEST_PRERELEASE_AFTER_RELEASE="true"
-          fi
-
-          # Output the findings
-          echo "::set-output name=latest_release_tag::$LATEST_RELEASE_TAG"
-          echo "::set-output name=latest_prerelease_tag::$LATEST_PRERELEASE_TAG"
-          echo "::set-output name=latest_prerelease_after_release::$LATEST_PRERELEASE_AFTER_RELEASE"
-        shell: bash
-
       - name: Install Dependencies
         shell: pwsh
         run: |
@@ -55,6 +21,54 @@ jobs:
           Install-PSResource -Name PowerShellGet -Scope CurrentUser
           Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -Scope CurrentUser
           Install-PSResource -Name Pester -Scope CurrentUser
+
+      - name: Validate Module Versions
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./scripts/Validate-ModuleVersion.ps1 -Version ${{ github.ref_name }}
+
+      - name: Determine tags for comparison
+        id: compare_tags
+        run: |
+          # Get all tags, then sort them by version
+          git tag --list "v*" | sort --version-sort > sorted_tags.txt
+
+          # Initialize variables
+          LATEST_RELEASE_TAG=""
+          LATEST_PRERELEASE_TAG=""
+          PREVIOUS_TAG=""
+
+          # Iterate through sorted tags to find the latest release and prerelease tags
+          while read -r tag; do
+              # This regex matches both release and prerelease tags
+              if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+                  # If it's a release tag (no prerelease identifier)
+                  if [[ ! "$tag" =~ - ]]; then
+                      LATEST_RELEASE_TAG="$tag"
+                      # Reset LATEST_PRERELEASE_TAG if a new release is found
+                      LATEST_PRERELEASE_TAG=""
+                  else
+                      # Only update LATEST_PRERELEASE_TAG if it's after the latest release
+                      if [[ "$LATEST_RELEASE_TAG" != "" && "$PREVIOUS_TAG" == "$LATEST_RELEASE_TAG" ]]; then
+                          LATEST_PRERELEASE_TAG="$tag"
+                      fi
+                  fi
+              fi
+              PREVIOUS_TAG="$tag"
+          done < sorted_tags.txt
+
+          # Determine if the latest prerelease tag is after the latest release tag
+          LATEST_PRERELEASE_AFTER_RELEASE="false"
+          if [[ "$LATEST_PRERELEASE_TAG" != "" && "$LATEST_PRERELEASE_TAG" != "$LATEST_RELEASE_TAG" ]]; then
+              LATEST_PRERELEASE_AFTER_RELEASE="true"
+          fi
+
+          # Output the findings
+          echo "::set-output name=latest_release_tag::$LATEST_RELEASE_TAG"
+          echo "::set-output name=latest_prerelease_tag::$LATEST_PRERELEASE_TAG"
+          echo "::set-output name=latest_prerelease_after_release::$LATEST_PRERELEASE_AFTER_RELEASE"
+        shell: bash
 
       - name: Publish to PowerShell Gallery
         shell: pwsh
