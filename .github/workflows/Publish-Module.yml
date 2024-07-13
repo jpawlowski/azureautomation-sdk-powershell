@@ -6,7 +6,8 @@ on:
       - "v*" # Triggers the workflow on version tags
 
 jobs:
-  publish:
+  prepare:
+    name: Prepare Build Environment
     runs-on: ubuntu-latest
 
     steps:
@@ -22,6 +23,15 @@ jobs:
           Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -Scope CurrentUser
           Install-PSResource -Name Pester -Scope CurrentUser
 
+  validate:
+    name: Validate PowerShell Modules
+    runs-on: ubuntu-latest
+    outputs:
+      latest_release_tag: ${{ steps.compare_tags.outputs.latest_release_tag }}
+      latest_prerelease_tag: ${{ steps.compare_tags.outputs.latest_prerelease_tag }}
+      latest_prerelease_after_release: ${{ steps.compare_tags.outputs.latest_prerelease_after_release }}
+
+    steps:
       - name: Validate Module Versions
         shell: pwsh
         run: |
@@ -31,46 +41,48 @@ jobs:
       - name: Determine tags for comparison
         id: compare_tags
         run: |
-          # Get all tags, then sort them by version
-          git tag --list "v*" | sort --version-sort > sorted_tags.txt
+          # Get all version tags, then sort them by version in reverse order
+          git tag --list "v*" | sort --version-sort --reverse > /tmp/sorted_tags.txt
 
           # Initialize variables
-          LATEST_RELEASE_TAG=""
-          LATEST_PRERELEASE_TAG=""
-          PREVIOUS_TAG=""
+          PREVIOUS_RELEASE_TAG=""
+          PRERELEASE_TAGS=()
+          CURRENT_TAG_FOUND=false
+          AFTER_PREVIOUS_RELEASE=false
+          CURRENT_TAG="${{ github.ref_name }}"
 
-          # Iterate through sorted tags to find the latest release and prerelease tags
+          # Iterate through sorted tags in reverse order to find the previous release tag before the current tag
+          # and collect prerelease tags between the previous release tag and the current tag
           while read -r tag; do
-              # This regex matches both release and prerelease tags
-              if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
-                  # If it's a release tag (no prerelease identifier)
-                  if [[ ! "$tag" =~ - ]]; then
-                      LATEST_RELEASE_TAG="$tag"
-                      # Reset LATEST_PRERELEASE_TAG if a new release is found
-                      LATEST_PRERELEASE_TAG=""
-                  else
-                      # Only update LATEST_PRERELEASE_TAG if it's after the latest release
-                      if [[ "$LATEST_RELEASE_TAG" != "" && "$PREVIOUS_TAG" == "$LATEST_RELEASE_TAG" ]]; then
-                          LATEST_PRERELEASE_TAG="$tag"
-                      fi
+              if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|rc)[0-9]+)?$ ]]; then
+                  if [[ "$CURRENT_TAG_FOUND" == true ]]; then
+                      # Once the current tag is found, the next tag in reverse order is the previous release
+                      PREVIOUS_RELEASE_TAG="$tag"
+                      break # Exit the loop as we found what we were looking for
+                  elif [[ "$tag" == "$CURRENT_TAG" ]]; then
+                      # Mark that the current tag is found
+                      CURRENT_TAG_FOUND=true
+                  elif [[ "$CURRENT_TAG_FOUND" == true ]]; then
+                      # Collect prerelease tags after the previous release tag and before the current tag
+                      PRERELEASE_TAGS+=("$tag")
                   fi
               fi
-              PREVIOUS_TAG="$tag"
-          done < sorted_tags.txt
+          done < /tmp/sorted_tags.txt
 
-          # Determine if the latest prerelease tag is after the latest release tag
-          LATEST_PRERELEASE_AFTER_RELEASE="false"
-          if [[ "$LATEST_PRERELEASE_TAG" != "" && "$LATEST_PRERELEASE_TAG" != "$LATEST_RELEASE_TAG" ]]; then
-              LATEST_PRERELEASE_AFTER_RELEASE="true"
-          fi
+          # Convert prerelease tags array to a string
+          PRERELEASE_TAGS_STR=$(IFS=, ; echo "${PRERELEASE_TAGS[*]}")
 
           # Output the findings
-          echo "::set-output name=latest_release_tag::$LATEST_RELEASE_TAG"
-          echo "::set-output name=latest_prerelease_tag::$LATEST_PRERELEASE_TAG"
-          echo "::set-output name=latest_prerelease_after_release::$LATEST_PRERELEASE_AFTER_RELEASE"
+          echo "::set-output name=PREVIOUS_RELEASE_TAG::$PREVIOUS_RELEASE_TAG"
+          echo "::set-output name=PRERELEASE_TAGS::$PRERELEASE_TAGS_STR"
         shell: bash
 
-      - name: Publish to PowerShell Gallery
+  publish:
+    name: Publish PowerShell Modules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Publish to Repository
         shell: pwsh
         env:
           PSResourceRepositoryApiKey: ${{ secrets.PSGalleryApiKey }}
@@ -79,7 +91,12 @@ jobs:
           $Modules = @(./Scripts/Publish-PSModuleToRepository.ps1) - join ','
           echo "published_modules=$Modules" >> $env:GITHUB_ENV
 
-      - name: Download nupkg from Repository
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download signed nupkg from Repository
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
