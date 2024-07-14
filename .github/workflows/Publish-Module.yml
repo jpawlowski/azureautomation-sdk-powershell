@@ -6,8 +6,8 @@ on:
       - "v*" # Triggers the workflow on version tags
 
 jobs:
-  prepare:
-    name: Prepare Build Environment
+  publish:
+    name: Build and Publish Modules
     runs-on: ubuntu-latest
 
     steps:
@@ -59,7 +59,7 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $currentTag = "${{ github.ref_name }}"
           $IsPrerelease = $currentTag -match '-'
-          $releases = ./Scripts/Get-GitHubReleases.ps1 -CurrentTag $currentTag
+          $releases = ./Scripts/Get-GitRepositoryVersionDetails.ps1 -CurrentTag $currentTag
           $body = if ($IsPrerelease) {
             "This is a pre-release version of the module. It is not recommended for production use.`n"
           }
