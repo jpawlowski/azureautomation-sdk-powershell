@@ -24,12 +24,8 @@ jobs:
           Install-PSResource -Name Pester -Scope CurrentUser
 
   validate:
-    name: Validate PowerShell Modules
+    name: Validate PowerShell Module Manifests
     runs-on: ubuntu-latest
-    outputs:
-      latest_release_tag: ${{ steps.compare_tags.outputs.latest_release_tag }}
-      latest_prerelease_tag: ${{ steps.compare_tags.outputs.latest_prerelease_tag }}
-      latest_prerelease_after_release: ${{ steps.compare_tags.outputs.latest_prerelease_after_release }}
 
     steps:
       - name: Validate Module Versions
@@ -38,80 +34,52 @@ jobs:
           $ErrorActionPreference = 'Stop'
           ./scripts/Validate-ModuleVersion.ps1 -Version ${{ github.ref_name }}
 
-      - name: Determine tags for comparison
-        id: compare_tags
-        run: |
-          # Get all version tags, then sort them by version in reverse order
-          git tag --list "v*" | sort --version-sort --reverse > /tmp/sorted_tags.txt
-
-          # Initialize variables
-          PREVIOUS_RELEASE_TAG=""
-          PRERELEASE_TAGS=()
-          CURRENT_TAG_FOUND=false
-          AFTER_PREVIOUS_RELEASE=false
-          CURRENT_TAG="${{ github.ref_name }}"
-
-          # Iterate through sorted tags in reverse order to find the previous release tag before the current tag
-          # and collect prerelease tags between the previous release tag and the current tag
-          while read -r tag; do
-              if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|rc)[0-9]+)?$ ]]; then
-                  if [[ "$CURRENT_TAG_FOUND" == true ]]; then
-                      # Once the current tag is found, the next tag in reverse order is the previous release
-                      PREVIOUS_RELEASE_TAG="$tag"
-                      break # Exit the loop as we found what we were looking for
-                  elif [[ "$tag" == "$CURRENT_TAG" ]]; then
-                      # Mark that the current tag is found
-                      CURRENT_TAG_FOUND=true
-                  elif [[ "$CURRENT_TAG_FOUND" == true ]]; then
-                      # Collect prerelease tags after the previous release tag and before the current tag
-                      PRERELEASE_TAGS+=("$tag")
-                  fi
-              fi
-          done < /tmp/sorted_tags.txt
-
-          # Convert prerelease tags array to a string
-          PRERELEASE_TAGS_STR=$(IFS=, ; echo "${PRERELEASE_TAGS[*]}")
-
-          # Output the findings
-          echo "::set-output name=PREVIOUS_RELEASE_TAG::$PREVIOUS_RELEASE_TAG"
-          echo "::set-output name=PRERELEASE_TAGS::$PRERELEASE_TAGS_STR"
-        shell: bash
-
-  publish:
+  publish-modules:
     name: Publish PowerShell Modules
     runs-on: ubuntu-latest
+    outputs:
+      published_modules: ${{ steps.published_modules.outputs.module_names }}
 
     steps:
       - name: Publish to Repository
+        id: published_modules
         shell: pwsh
         env:
           PSResourceRepositoryApiKey: ${{ secrets.PSGalleryApiKey }}
         run: |
           $ErrorActionPreference = 'Stop'
           $Modules = @(./Scripts/Publish-PSModuleToRepository.ps1) - join ','
-          echo "published_modules=$Modules" >> $env:GITHUB_ENV
+          echo "module_names=$Modules" >> $GITHUB_OUTPUT
 
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
+    needs: [publish-modules]
 
     steps:
-      - name: Download signed nupkg from Repository
+      - name: Generate Release Notes
+        id: release_text
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $Modules = @(./Scripts/Receive-PSModuleFromRepository.ps1 -Modules $env:published_modules ) -join ','
-          echo "downloaded_modules=$Modules" >> $env:GITHUB_ENV
-
-      - name: Create ZIP archives
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $Modules = @(./Scripts/Compress-PSModule.ps1 -Modules $env:published_modules ) -join ','
-          echo "compressed_modules=$Modules" >> $env:GITHUB_ENV
+          $currentTag = "${{ github.ref_name }}"
+          $IsPrerelease = $currentTag -match '-'
+          $releases = ./Scripts/Get-GitHubReleases.ps1 -CurrentTag $currentTag
+          $body = if ($IsPrerelease) {
+            "This is a pre-release version of the module. It is not recommended for production use.`n"
+          }
+          else {
+            "This is a release version of the module and may be used in production environments.`n"
+          }
+          if ($IsPrerelease -and $releases.nearestPreReleaseTag) {
+            $body += "`nChanges since last pre-release version: [$(${{ github.ref_name }})...$($releases.nearestPreReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestPreReleaseTag)...${{ github.ref_name }})"
+          }
+          if ($releases.nearestReleaseTag) {
+            $body += "`nChanges since last release version: [$(${{ github.ref_name }})...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})"
+          }
+          echo "body=$body" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
-        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -120,17 +88,21 @@ jobs:
           release_name: ${{ contains(github.ref_name, '-') && 'Prerelease ' || 'Release ' }}${{ github.ref_name }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
-          body: |
-            This release is automatically generated.
+          body: ${{ steps.release_text.outputs.body }}
 
-            Changes: [${{ github.ref_name }}...${{ steps.latest_release.outputs.tag }}](https://github.com/${{ github.repository }}/compare/${{ steps.latest_release.outputs.tag }}...${{ github.ref_name }})
+      - name: Download signed nupkg from Repository and upload to GitHub Release
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./Scripts/Receive-PSModuleFromRepository.ps1 -Modules "${{ needs.publish-modules.outputs.published_modules }}" | ForEach-Object {
+            gh release upload ${{ github.ref_name }} $_
+          }
 
-      # - name: Upload PowerShell Module to Release
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./$GITHUB_REPOSITORY-$GITHUB_REF_NAME.zip
-      #     asset_name: $GITHUB_REPOSITORY-$GITHUB_REF_NAME.zip
-      #     asset_content_type: application/zip
+      - name: Upload ZIP archives to GitHub Release
+        id: compressed_module_files
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./Scripts/Compress-PSModule.ps1 -Modules "${{ needs.publish-modules.outputs.published_modules }}" | ForEach-Object {
+            gh release upload ${{ github.ref_name }} $_
+          }
