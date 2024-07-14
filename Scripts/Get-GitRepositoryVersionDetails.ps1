@@ -1,6 +1,6 @@
 <#PSScriptInfo
 .VERSION 1.0.0
-.GUID 0b1b1b1b-0b1b-0b1b-0b1b-0b1b0b1b0b1b
+.GUID e06d5fa2-ec5b-4e2e-aa53-2f1245952467
 .AUTHOR Julian Pawlowski
 .COMPANYNAME Workoho
 #>
@@ -16,7 +16,7 @@
 .OUTPUTS
     System.Collections.Hashtable
     An ordered hashtable with the following keys:
-    - nearestReleaseTag: The nearest release tag.
+    - nearestReleaseTag: The nearestScripts release tag.
     - nearestPreReleaseTag: The nearest pre-release tag in case the current tag is a pre-release tag.
 #>
 
