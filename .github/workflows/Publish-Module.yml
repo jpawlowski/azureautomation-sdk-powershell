@@ -73,21 +73,21 @@ jobs:
           if ($releases.nearestReleaseTag) {
             $body += "`nChanges since last release version: [${{ github.ref_name }}...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})"
           }
-          echo 'body<<EOF' >> $env:GITHUB_OUTPUT
-          echo "$body" >> $env:GITHUB_OUTPUT
-          echo 'EOF' >> $env:GITHUB_OUTPUT
+          echo 'RELEASE_BODY<<EOF' >> $env:GITHUB_ENV
+          echo "$body" >> $env:GITHUB_ENV
+          echo 'EOF' >> $env:GITHUB_ENV
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BODY: ${{ env.RELEASE_BODY }}
         with:
           tag_name: ${{ github.ref_name }}
           release_name: ${{ contains(github.ref_name, '-') && 'Prerelease ' || 'Release ' }}${{ github.ref_name }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
-          body: |
-            ${{ steps.release_text.outputs.body }}
+          body: ${{ env.RELEASE_BODY }}
 
       - name: Download signed nupkg from Repository and upload to GitHub Release
         shell: pwsh
