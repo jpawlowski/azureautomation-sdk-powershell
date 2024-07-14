@@ -24,6 +24,11 @@ jobs:
           Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
           Install-PSResource -Name Pester
 
+          # Add the PowerShell modules path to the PATH environment variable
+          $env:PATH += ":/home/runner/.local/share/powershell/Scripts"
+          # Verify the updated PATH
+          Write-Output "Updated PATH: $env:PATH"
+
   validate:
     name: Validate PowerShell Module Manifests
     runs-on: ubuntu-latest
@@ -34,7 +39,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          ./scripts/Validate-PSModuleManifestVersion.ps1 -Version ${{ github.ref_name }}
+          ./Scripts/Validate-PSModuleManifestVersion.ps1 -Version ${{ github.ref_name }}
 
   publish-modules:
     name: Publish PowerShell Modules
