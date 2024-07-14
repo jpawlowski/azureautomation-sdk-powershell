@@ -19,10 +19,10 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           Set-PSResourceRepository -Name PSGallery -Trusted
-          Install-PSResource -Name PackageManagement -Scope CurrentUser
-          Install-PSResource -Name PowerShellGet -Scope CurrentUser
-          Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -Scope CurrentUser
-          Install-PSResource -Name Pester -Scope CurrentUser
+          Install-PSResource -Name PackageManagement
+          Install-PSResource -Name PowerShellGet
+          Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
+          Install-PSResource -Name Pester
 
   validate:
     name: Validate PowerShell Module Manifests
@@ -34,7 +34,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          ./scripts/Validate-ModuleVersion.ps1 -Version ${{ github.ref_name }}
+          ./scripts/Validate-PSModuleManifestVersion.ps1 -Version ${{ github.ref_name }}
 
   publish-modules:
     name: Publish PowerShell Modules
