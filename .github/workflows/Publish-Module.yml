@@ -20,10 +20,10 @@ jobs:
           # Install Dependencies
           $ErrorActionPreference = 'Stop'
           Set-PSResourceRepository -Name PSGallery -Trusted
-          Install-PSResource -Name PackageManagement -WarningAction SilentlyContinue
-          Install-PSResource -Name PowerShellGet -WarningAction SilentlyContinue
-          Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -WarningAction SilentlyContinue
-          Install-PSResource -Name Pester -WarningAction SilentlyContinue
+          Install-PSResource -Name PackageManagement -WarningAction SilentlyContinue -Verbose
+          Install-PSResource -Name PowerShellGet -WarningAction SilentlyContinue -Verbose
+          Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -WarningAction SilentlyContinue -Verbose
+          Install-PSResource -Name Pester -WarningAction SilentlyContinue -Verbose
 
           # Add the PowerShell modules path to the PATH environment variable
           $env:PATH += ":/home/runner/.local/share/powershell/Scripts"
@@ -41,6 +41,7 @@ jobs:
         run: |
           # Validate the version of the module manifests
           $ErrorActionPreference = 'Stop'
+          Get-ChildItem
           & "$($env:GITHUB_WORKSPACE)/Scripts/Validate-PSModuleManifestVersion.ps1" -Version ${{ github.ref_name }}
 
   publish-modules:
