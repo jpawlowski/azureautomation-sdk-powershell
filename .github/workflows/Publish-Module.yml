@@ -20,10 +20,10 @@ jobs:
           # Install Dependencies
           $ErrorActionPreference = 'Stop'
           Set-PSResourceRepository -Name PSGallery -Trusted
-          Install-PSResource -Name PackageManagement -WarningAction None
-          Install-PSResource -Name PowerShellGet -WarningAction None
-          Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -WarningAction None
-          Install-PSResource -Name Pester -WarningAction None
+          Install-PSResource -Name PackageManagement -WarningAction SilentlyContinue
+          Install-PSResource -Name PowerShellGet -WarningAction SilentlyContinue
+          Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -WarningAction SilentlyContinue
+          Install-PSResource -Name Pester -WarningAction SilentlyContinue
 
           # Add the PowerShell modules path to the PATH environment variable
           $env:PATH += ":/home/runner/.local/share/powershell/Scripts"
