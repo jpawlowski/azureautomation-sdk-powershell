@@ -64,6 +64,7 @@ jobs:
           $currentTag = "${{ github.ref_name }}"
           $IsPrerelease = $currentTag -match '-'
           $releases = ./Scripts/Get-GitRepositoryVersionDetails.ps1 -CurrentTag $currentTag
+          $indent = '            '
           $body = if ($IsPrerelease) {
             "This is a pre-release version of the module. It is not recommended for production use.`n"
           }
@@ -71,12 +72,10 @@ jobs:
             "This is a release version of the module and may be used in production environments.`n"
           }
           if ($IsPrerelease -and $releases.nearestPreReleaseTag) {
-            Write-Verbose "`nChanges since last pre-release version: [${{ github.ref_name }}...$($releases.nearestPreReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestPreReleaseTag)...${{ github.ref_name }})" -Verbose
-            $body += "`nChanges since last pre-release version: [${{ github.ref_name }}...$($releases.nearestPreReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestPreReleaseTag)...${{ github.ref_name }})"
+            $body += "`n${$indent}Changes since last pre-release version: [${{ github.ref_name }}...$($releases.nearestPreReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestPreReleaseTag)...${{ github.ref_name }})"
           }
           if ($releases.nearestReleaseTag) {
-            Write-Verbose "`nChanges since last release version: [${{ github.ref_name }}...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})" -Verbose
-            $body += "`nChanges since last release version: [${{ github.ref_name }}...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})"
+            $body += "`n${$indent}Changes since last release version: [${{ github.ref_name }}...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})"
           }
           echo 'body<<EOF' >> $env:GITHUB_OUTPUT
           echo "$body" >> $env:GITHUB_OUTPUT
