@@ -91,7 +91,8 @@ jobs:
           release_name: ${{ contains(github.ref_name, '-') && 'Prerelease ' || 'Release ' }}${{ github.ref_name }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
-          body: ${{ steps.release_notes.outputs.body }}
+          body: |
+            ${{ steps.release_notes.outputs.body }}
 
       - name: Download signed nupkg from Repository and upload to GitHub Release
         shell: pwsh
