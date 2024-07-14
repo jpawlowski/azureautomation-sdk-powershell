@@ -46,7 +46,7 @@ jobs:
         run: |
           # Validate the version of the module manifests
           $ErrorActionPreference = 'Stop'
-          & "$($env:GITHUB_WORKSPACE)/Scripts/Validate-PSModuleManifestVersion.ps1" -Version ${{ github.ref_name }}
+          ./Scripts/Validate-PSModuleManifestVersion.ps1 -Version ${{ github.ref_name }}
 
   publish-modules:
     name: Publish PowerShell Modules
@@ -67,7 +67,7 @@ jobs:
         run: |
           # Publish the modules to the PSGallery
           $ErrorActionPreference = 'Stop'
-          $Modules = @(./Scripts/Publish-PSModuleToRepository.ps1) - join ','
+          $Modules = @(./Scripts/Publish-PSModuleToRepository.ps1) -join ','
           echo "module_names=$Modules" >> $env:GITHUB_OUTPUT
 
   release:
