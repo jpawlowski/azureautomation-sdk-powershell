@@ -18,6 +18,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          Set-PSResourceRepository -Name PSGallery -Trusted
           Install-PSResource -Name PackageManagement -Scope CurrentUser
           Install-PSResource -Name PowerShellGet -Scope CurrentUser
           Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -Scope CurrentUser
