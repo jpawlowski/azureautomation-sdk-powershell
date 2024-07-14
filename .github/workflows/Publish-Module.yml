@@ -17,12 +17,13 @@ jobs:
       - name: Install Dependencies
         shell: pwsh
         run: |
+          # Install Dependencies
           $ErrorActionPreference = 'Stop'
           Set-PSResourceRepository -Name PSGallery -Trusted
-          Install-PSResource -Name PackageManagement
-          Install-PSResource -Name PowerShellGet
-          Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
-          Install-PSResource -Name Pester
+          Install-PSResource -Name PackageManagement -WarningAction None
+          Install-PSResource -Name PowerShellGet -WarningAction None
+          Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -WarningAction None
+          Install-PSResource -Name Pester -WarningAction None
 
           # Add the PowerShell modules path to the PATH environment variable
           $env:PATH += ":/home/runner/.local/share/powershell/Scripts"
@@ -38,8 +39,9 @@ jobs:
       - name: Validate Module Versions
         shell: pwsh
         run: |
+          # Validate the version of the module manifests
           $ErrorActionPreference = 'Stop'
-          ./Scripts/Validate-PSModuleManifestVersion.ps1 -Version ${{ github.ref_name }}
+          & "$($env:GITHUB_WORKSPACE)/Scripts/Validate-PSModuleManifestVersion.ps1" -Version ${{ github.ref_name }}
 
   publish-modules:
     name: Publish PowerShell Modules
@@ -55,9 +57,10 @@ jobs:
         env:
           PSResourceRepositoryApiKey: ${{ secrets.PSGalleryApiKey }}
         run: |
+          # Publish the modules to the PSGallery
           $ErrorActionPreference = 'Stop'
           $Modules = @(./Scripts/Publish-PSModuleToRepository.ps1) - join ','
-          echo "module_names=$Modules" >> $GITHUB_OUTPUT
+          echo "module_names=$Modules" >> $env:GITHUB_OUTPUT
 
   release:
     name: Create GitHub Release
@@ -69,6 +72,7 @@ jobs:
         id: release_text
         shell: pwsh
         run: |
+          # Generate the release notes for the GitHub release
           $ErrorActionPreference = 'Stop'
           $currentTag = "${{ github.ref_name }}"
           $IsPrerelease = $currentTag -match '-'
@@ -85,7 +89,7 @@ jobs:
           if ($releases.nearestReleaseTag) {
             $body += "`nChanges since last release version: [$(${{ github.ref_name }})...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})"
           }
-          echo "body=$body" >> $GITHUB_OUTPUT
+          echo "body=$body" >> $env:GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
@@ -101,6 +105,7 @@ jobs:
       - name: Download signed nupkg from Repository and upload to GitHub Release
         shell: pwsh
         run: |
+          # Download the signed nupkg files from the PSGallery and upload them to the GitHub release
           $ErrorActionPreference = 'Stop'
           ./Scripts/Receive-PSModuleFromRepository.ps1 -Modules "${{ needs.publish-modules.outputs.published_modules }}" | ForEach-Object {
             gh release upload ${{ github.ref_name }} $_
@@ -110,6 +115,7 @@ jobs:
         id: compressed_module_files
         shell: pwsh
         run: |
+          # Compress the module files and upload them to the GitHub release
           $ErrorActionPreference = 'Stop'
           ./Scripts/Compress-PSModule.ps1 -Modules "${{ needs.publish-modules.outputs.published_modules }}" | ForEach-Object {
             gh release upload ${{ github.ref_name }} $_
