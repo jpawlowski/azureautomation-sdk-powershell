@@ -26,6 +26,7 @@ jobs:
   validate:
     name: Validate PowerShell Module Manifests
     runs-on: ubuntu-latest
+    needs: [prepare]
 
     steps:
       - name: Validate Module Versions
@@ -37,6 +38,7 @@ jobs:
   publish-modules:
     name: Publish PowerShell Modules
     runs-on: ubuntu-latest
+    needs: [validate]
     outputs:
       published_modules: ${{ steps.published_modules.outputs.module_names }}
 
