@@ -64,7 +64,7 @@ jobs:
           $currentTag = "${{ github.ref_name }}"
           $IsPrerelease = $currentTag -match '-'
           $releases = ./Scripts/Get-GitRepositoryVersionDetails.ps1 -CurrentTag $currentTag
-          $indent = '            '
+          $indent = '        '
           $body = if ($IsPrerelease) {
             "This is a pre-release version of the module. It is not recommended for production use.`n"
           }
