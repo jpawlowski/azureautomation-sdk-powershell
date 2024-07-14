@@ -90,6 +90,8 @@ jobs:
 
       - name: Download signed nupkg from Repository and upload to GitHub Release
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Download the signed nupkg files from the PSGallery and upload them to the GitHub release
           $ErrorActionPreference = 'Stop'
@@ -100,6 +102,8 @@ jobs:
       - name: Upload ZIP archives to GitHub Release
         id: compressed_module_files
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Compress the module files and upload them to the GitHub release
           $ErrorActionPreference = 'Stop'

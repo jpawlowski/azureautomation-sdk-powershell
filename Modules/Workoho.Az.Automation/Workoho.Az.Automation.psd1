@@ -30,7 +30,7 @@ CompanyName = 'Workoho'
 Copyright = '© Workoho GmbH. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Helper functions for Azure Automation runbooks.'
+Description = 'Helper functions for unattended PowerShell automations, like Azure Automation runbooks.'
 
 # Minimum version of the PowerShell engine required by this module
 PowerShellVersion = '7.2'
@@ -133,7 +133,7 @@ PrivateData = @{
         ReleaseNotes = 'For detailed release notes, please visit https://github.com/workoho/automation-sdk-powershell/releases'
 
         # Prerelease string of this module
-        Prerelease = 'alpha2'
+        Prerelease = 'alpha3'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
