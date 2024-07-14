@@ -31,7 +31,6 @@ jobs:
           Write-Output "Updated PATH: $env:PATH"
 
           Write-Output $(Get-ChildItem -Path .)
-          Write-Output $(Get-ChildItem -Path env:)
 
   validate:
     name: Validate PowerShell Module Manifests
@@ -39,6 +38,9 @@ jobs:
     needs: [prepare]
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Validate Module Versions
         shell: pwsh
         run: |
@@ -54,6 +56,9 @@ jobs:
       published_modules: ${{ steps.published_modules.outputs.module_names }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Publish to Repository
         id: published_modules
         shell: pwsh
@@ -71,6 +76,9 @@ jobs:
     needs: [publish-modules]
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Generate Release Notes
         id: release_text
         shell: pwsh
