@@ -1,6 +1,6 @@
 {
 	"name": "Workoho.Automation",
-	"image": "ghcr.io/workoho/azauto-common-runbook-fw:latest",
+	"image": "ghcr.io/jpawlowski/microsoft365-admincontainer:latest",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {
 			"installZsh": "true",
@@ -15,7 +15,7 @@
   "postStartCommand": "./.devcontainer/postStartCommand.sh",
 
   "containerEnv": {
-    "POWERSHELL_DISTRIBUTION_CHANNEL": "true"
+    "CONTAINER": "true"
   },
 
   // Configure tool-specific properties.

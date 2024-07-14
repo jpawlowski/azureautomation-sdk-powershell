@@ -32,8 +32,8 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
 @(
-    # 'MyModule'
+    'Workoho.Automation'
 ) | ForEach-Object {
     Write-Host "Installing module $_..."
-    Install-Module $_ -Scope AllUsers -AllowClobber -Force -Verbose
+    Install-PSResource $_ -Scope AllUsers -TrustRepository -Verbose
 }
