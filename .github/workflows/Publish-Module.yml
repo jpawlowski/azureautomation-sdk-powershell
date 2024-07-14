@@ -56,6 +56,7 @@ jobs:
           echo "module_names=$Modules" >> $env:GITHUB_OUTPUT
 
       - name: Generate Release Notes
+        id: release_notes
         shell: pwsh
         run: |
           # Generate the release notes for the GitHub release
@@ -77,21 +78,20 @@ jobs:
             Write-Verbose "`nChanges since last release version: [${{ github.ref_name }}...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})" -Verbose
             $body += "`nChanges since last release version: [${{ github.ref_name }}...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})"
           }
-          echo 'RELEASE_BODY<<EOF' >> $env:GITHUB_ENV
-          echo "$body" >> $env:GITHUB_ENV
-          echo 'EOF' >> $env:GITHUB_ENV
+          echo 'body<<EOF' >> $env:GITHUB_OUTPUT
+          echo "$body" >> $env:GITHUB_OUTPUT
+          echo 'EOF' >> $env:GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_BODY: ${{ env.RELEASE_BODY }}
         with:
           tag_name: ${{ github.ref_name }}
           release_name: ${{ contains(github.ref_name, '-') && 'Prerelease ' || 'Release ' }}${{ github.ref_name }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
-          body: ${{ env.RELEASE_BODY }}
+          body: ${{ steps.release_notes.outputs.body }}
 
       - name: Download signed nupkg from Repository and upload to GitHub Release
         shell: pwsh
