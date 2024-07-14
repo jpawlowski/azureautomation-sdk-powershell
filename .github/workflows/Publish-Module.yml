@@ -68,9 +68,11 @@ jobs:
             "This is a release version of the module and may be used in production environments.`n"
           }
           if ($IsPrerelease -and $releases.nearestPreReleaseTag) {
+            Write-Verbose "`nChanges since last pre-release version: [${{ github.ref_name }}...$($releases.nearestPreReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestPreReleaseTag)...${{ github.ref_name }})" -Verbose
             $body += "`nChanges since last pre-release version: [${{ github.ref_name }}...$($releases.nearestPreReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestPreReleaseTag)...${{ github.ref_name }})"
           }
           if ($releases.nearestReleaseTag) {
+            Write-Verbose "`nChanges since last release version: [${{ github.ref_name }}...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})" -Verbose
             $body += "`nChanges since last release version: [${{ github.ref_name }}...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})"
           }
           echo 'RELEASE_BODY<<EOF' >> $env:GITHUB_ENV

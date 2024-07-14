@@ -133,7 +133,7 @@ PrivateData = @{
         ReleaseNotes = 'For detailed release notes, please visit https://github.com/workoho/automation-sdk-powershell/releases'
 
         # Prerelease string of this module
-        Prerelease = 'alpha5'
+        Prerelease = 'alpha6'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
