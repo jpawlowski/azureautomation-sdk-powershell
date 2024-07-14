@@ -54,7 +54,6 @@ jobs:
           echo "module_names=$Modules" >> $env:GITHUB_OUTPUT
 
       - name: Generate Release Notes
-        id: release_text
         shell: pwsh
         run: |
           # Generate the release notes for the GitHub release
@@ -63,18 +62,20 @@ jobs:
           $IsPrerelease = $currentTag -match '-'
           $releases = ./Scripts/Get-GitRepositoryVersionDetails.ps1 -CurrentTag $currentTag
           $body = if ($IsPrerelease) {
-            "This is a pre-release version of the module. It is not recommended for production use.%0A"
+            "This is a pre-release version of the module. It is not recommended for production use.`n"
           }
           else {
-            "This is a release version of the module and may be used in production environments.%0A"
+            "This is a release version of the module and may be used in production environments.`n"
           }
           if ($IsPrerelease -and $releases.nearestPreReleaseTag) {
-            $body += "%0AChanges since last pre-release version: [${{ github.ref_name }}...$($releases.nearestPreReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestPreReleaseTag)...${{ github.ref_name }})"
+            $body += "`nChanges since last pre-release version: [${{ github.ref_name }}...$($releases.nearestPreReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestPreReleaseTag)...${{ github.ref_name }})"
           }
           if ($releases.nearestReleaseTag) {
-            $body += "%0AChanges since last release version: [${{ github.ref_name }}...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})"
+            $body += "`nChanges since last release version: [${{ github.ref_name }}...$($releases.nearestReleaseTag)](https://github.com/${{ github.repository }}/compare/$($releases.nearestReleaseTag)...${{ github.ref_name }})"
           }
-          echo "body=$body" >> $env:GITHUB_OUTPUT
+          echo 'body<<EOF' >> $env:GITHUB_OUTPUT
+          echo "$body" >> $env:GITHUB_OUTPUT
+          echo 'EOF' >> $env:GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
